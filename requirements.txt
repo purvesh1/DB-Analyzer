@@ -1,3 +1,5 @@
 psycopg2
 openai
 python-dotenv
+langchain
+langchain-experimental

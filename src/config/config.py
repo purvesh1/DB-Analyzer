@@ -16,6 +16,7 @@ class Config(metaclass=Singleton):
         self.debug_mode = False
         self.llm_model = os.getenv("LLM_MODEL", "gpt-3.5-turbo")
         self.token_limit = int(os.getenv("TOKEN_LIMIT", 4000))
+        self.temperature = int(os.getenv("OPENAI_TEMPERATURE", 0))
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         
         self.pg_password = os.getenv("DB_PASSWORD")

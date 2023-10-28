@@ -1,5 +1,5 @@
 import openai
-from config import cfg
+from config.config import cfg
 
 class DataAnalysis:
     def __init__(self):

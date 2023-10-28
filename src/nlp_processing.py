@@ -8,9 +8,10 @@ class NLPProcessing:
 
     def process_query(self, nl_query):
         # Step 1: Generate SQL Query using LLM
-        prompt = f"Translate the following natural language query into SQL: {nl_query}"
+        prompt = f"Translate the following natural language query into SQL: {nl_query}. Only code."
+        print("Prompt: ", prompt)
         sql_query = self.llm.generate_response(prompt)
-        
+        print("SQL Query: ",  sql_query)
         # Step 2: Validate SQL Query
         is_valid = self.db.validate_sql_query(sql_query)
         if not is_valid:

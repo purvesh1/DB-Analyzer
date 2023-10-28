@@ -1,6 +1,7 @@
 import time
 import openai
-from config import cfg
+import json
+from config.config import cfg
 
 class LLMIntegration:
     def __init__(self):
@@ -8,7 +9,7 @@ class LLMIntegration:
         self.temperature = cfg.temperature
         self.token_limit = cfg.token_limit
 
-    def generate_response(self, prompt, max_tokens=50):
+    def generate_response(self, prompt, max_tokens=1024):
         messages = [
             {"role": "system", "content": "You are a seasoned data analyst with years of experience with SQL databases, python programming and Business Analytics."},
             {"role": "user", "content": prompt}
@@ -21,6 +22,33 @@ class LLMIntegration:
                     messages=messages,
                     temperature=self.temperature,
                     max_tokens=max_tokens
+                )
+                return response.choices[0].message["content"].strip()
+            except openai.error.RateLimitError:
+                if cfg.debug_mode:
+                    print("API Rate Limit Reached. Waiting 20 seconds...")
+                time.sleep(20)
+            except openai.error.APIError as e:
+                # Handle other API errors
+                pass
+    
+    def generate_insights(self, result):
+        #print result
+        print("Results: ", result)
+        print("Generating insights...")
+        result_str = ', '.join([str(t) for t in result])
+        messages = [
+            {"role": "system", "content": "You are a seasoned data analyst with years of experience with SQL databases, python programming and Business Analytics."},
+            {"role": "user", "content": result_str}
+        ]
+        num_retries = 5
+        for attempt in range(num_retries):
+            try:
+                response = openai.ChatCompletion.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=self.temperature,
+                    max_tokens=self.token_limit
                 )
                 return response.choices[0].message["content"].strip()
             except openai.error.RateLimitError:

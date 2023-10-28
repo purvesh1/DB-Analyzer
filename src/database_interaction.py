@@ -1,5 +1,6 @@
 import psycopg2
-from config import cfg
+import sys
+from config.config import cfg
 
 class DatabaseInteraction:
     def __init__(self):
@@ -39,6 +40,12 @@ class DatabaseInteraction:
         if condition:
             sql += f" WHERE {condition}"
         return self.execute_sql(sql)
+
+    def validate_sql_query(self, sql_query):
+    # Basic validation logic here. For now, let's just check if the query is not empty.
+        if not sql_query.strip():
+            return False
+        return True
 
     # Add more CRUD methods like insert, update, delete, etc.
 
