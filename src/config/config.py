@@ -18,6 +18,7 @@ class Config(metaclass=Singleton):
         self.token_limit = int(os.getenv("TOKEN_LIMIT", 4000))
         self.temperature = int(os.getenv("OPENAI_TEMPERATURE", 0))
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.hf_api_key = os.getenv("HF_API_KEY")
         
         self.pg_password = os.getenv("DB_PASSWORD")
         self.pg_host = os.getenv("PG_HOST", "localhost")

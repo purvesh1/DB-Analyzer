@@ -1,4 +1,5 @@
 import psycopg2
+from prettytable import PrettyTable
 
 # Metadata Storage
 metadata_storage = {}
@@ -33,6 +34,28 @@ def prompt_user_for_field_choice(potential_fields):
         print(f"{i+1}. {field} in {table} - {get_field_semantics(field)}")
     choice = input("Enter your choice: ")
     return potential_fields[int(choice) - 1]
+
+def sql_result_to_table_str(sql_result):
+    # Create a PrettyTable object
+    table = PrettyTable()
+    
+    # If the result is empty, return a message
+    if not sql_result:
+        return "No results found."
+    
+    # Check if the result contains tuples or dictionaries
+    if isinstance(sql_result[0], tuple):
+        # If it's tuples, we don't have field names
+        for row in sql_result:
+            table.add_row(row)
+    else:
+        # If it's dictionaries, we can get field names
+        table.field_names = sql_result[0].keys()
+        for row in sql_result:
+            table.add_row(row.values())
+    
+    table.float_format = ".2"
+    return str(table)
 
 # Example usage
 # Establish your PostgreSQL connection here

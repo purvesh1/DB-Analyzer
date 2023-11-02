@@ -4,8 +4,25 @@ from config.config import cfg
 
 class DatabaseInteraction:
     def __init__(self):
-        self.conn = None
-        self.cursor = None
+        self.connect()
+        self.metadata = self.fetch_metadata()
+
+    def fetch_metadata(self):
+        cursor = self.conn.cursor()
+        query = "SELECT table_name FROM information_schema.tables WHERE table_schema='public';"
+        cursor.execute(query)
+        tables = [table[0] for table in cursor.fetchall()]
+        metadata = {}
+        for table in tables:
+            query = f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table}';"
+            cursor.execute(query)
+            columns = cursor.fetchall()
+            metadata[table] = {column[0]: column[1] for column in columns}
+        return metadata
+
+    def refresh_metadata(self):
+        self.metadata = self.fetch_metadata()
+
 
     def connect(self):
         self.conn = psycopg2.connect(

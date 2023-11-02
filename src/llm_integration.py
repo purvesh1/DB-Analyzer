@@ -2,16 +2,17 @@ import time
 import openai
 import json
 from config.config import cfg
-
+from utils import db_utils
 class LLMIntegration:
     def __init__(self):
         self.model = cfg.llm_model
         self.temperature = cfg.temperature
         self.token_limit = cfg.token_limit
+        self.previous_queries = {}
 
-    def generate_response(self, prompt, max_tokens=1024):
+    def generate_response(self, prompt, max_tokens=4096 - 52):
         messages = [
-            {"role": "system", "content": "You are a seasoned data analyst with years of experience with SQL databases, python programming and Business Analytics."},
+            {"role": "system", "content": "You are a seasoned data analyst with years of experience with SQL databases like Postgre, python programming and Business Analytics."},
             {"role": "user", "content": prompt}
         ]
         num_retries = 5
@@ -36,10 +37,10 @@ class LLMIntegration:
         #print result
         print("Results: ", result)
         print("Generating insights...")
-        result_str = ', '.join([str(t) for t in result])
+        print(db_utils.sql_result_to_table_str(result))
         messages = [
             {"role": "system", "content": "You are a seasoned data analyst with years of experience with SQL databases, python programming and Business Analytics."},
-            {"role": "user", "content": result_str}
+            {"role": "user", "content": db_utils.sql_result_to_table_str(result)}
         ]
         num_retries = 5
         for attempt in range(num_retries):

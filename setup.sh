@@ -7,7 +7,7 @@ cd src
 
 # Create Python files for different modules
 
-touch __init__.py main.py database_interaction.py llm_integration.py nlp_processing.py data_analysis.py cli_interface.py
+touch __init__.py main.py database_interaction.py llm_integration.py nlq_processing.py data_analysis.py cli_interface.py
 
 cd config
 
@@ -22,7 +22,7 @@ touch __init__.py helpers.py db_utils.py
 cd tests
 
 # Create test files
-touch __init__.py test_database_interaction.py test_llm_integration.py test_nlp_processing.py test_data_analysis.py
+touch __init__.py test_database_interaction.py test_llm_integration.py test_nlq_processing.py test_data_analysis.py
 
 cd ..
 
