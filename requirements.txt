@@ -1,12 +1,6 @@
 psycopg2
 openai
 python-dotenv
-langchain
-langchain-experimental
-prettytable
-llama-index
 torch
-transformers
 accelerate
 argparse
-llama-hub

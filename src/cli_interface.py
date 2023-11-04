@@ -10,16 +10,25 @@ def main():
     while True:
         nl_query = input("Please enter your query in natural language: ")
         print("Natural Language Query: ", nl_query)
+        
+        # Log NL query
+        print(db.log_to_file(nl_query, False))
+        
         # Convert NL query to SQL query
-        sql_query = nlqp.process_query(nl_query)
+        sql_query = db.extract_sql_blocks(llm.generate_response(nl_query))[0]
+        print("SQL Query: ", sql_query)
+        print("-"*20)
+        
+        # Log SQL query
+        print(db.log_to_file(sql_query, True))
         
         # Execute SQL query
-        data = db.execute_sql(sql_query)
-        insights = ""
-        if "SELECT" in sql_query.upper():
-            insights = llm.generate_insights(data)
+        # data = db.execute_sql(sql_query)
+        # insights = ""
+        # if "SELECT" in sql_query.upper():
+        #     insights = llm.generate_insights(data)
         
-        print(f"Insights:" + "\n" + insights)
+        # print(f"Insights:" + "\n" + insights)
 
         cont = input("Would you like to continue? (y/n): ")
         if cont.lower() != 'y':

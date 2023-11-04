@@ -1,4 +1,3 @@
-import psycopg2
 from prettytable import PrettyTable
 
 # Metadata Storage
@@ -11,18 +10,6 @@ def fetch_and_store_metadata(conn):
         table_name = table[0]
         cursor.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table_name}'")
         metadata_storage[table_name] = cursor.fetchall()
-
-def is_potential_field(metadata, value):
-    # Implement your logic here to decide if a field is a potential match for the value
-    return True
-
-def identify_potential_fields(value):
-    potential_fields = []
-    for table, metadata in metadata_storage.items():
-        for field, field_type in metadata:
-            if is_potential_field(field_type, value):
-                potential_fields.append((table, field))
-    return potential_fields
 
 def get_field_semantics(field):
     # Implement your logic here to provide a one-line semantic description of the field
@@ -57,6 +44,13 @@ def sql_result_to_table_str(sql_result):
     table.float_format = ".2"
     return str(table)
 
+def enforce_query_limit(query, max_rows=3):
+    # Check if the query already has a LIMIT clause
+    if "LIMIT" in query.upper():
+        return query
+    else:
+        # If not, append a LIMIT clause to the query
+        return f"{query.strip(';')} LIMIT {max_rows};"
 # Example usage
 # Establish your PostgreSQL connection here
 # conn = psycopg2.connect(...)

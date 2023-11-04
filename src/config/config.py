@@ -21,10 +21,10 @@ class Config(metaclass=Singleton):
         self.hf_api_key = os.getenv("HF_API_KEY")
         
         self.pg_password = os.getenv("DB_PASSWORD")
-        self.pg_host = os.getenv("PG_HOST", "localhost")
+        self.pg_host = os.getenv("PG_HOST", "127.0.0.1")
         self.pg_user = os.getenv("PG_USER", "postgres")
         self.pg_port = int(os.getenv("PG_PORT", "5432"))
-        self.pg_database = os.getenv("PG_DATABASE", "capstone")
+        self.pg_database = os.getenv("PG_DATABASE", "capstone_test")
 
     def set_openai_api_key(self, value: str):
         self.openai_api_key = value

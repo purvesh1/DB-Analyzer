@@ -1,6 +1,5 @@
 import time
 import openai
-import json
 from config.config import cfg
 from utils import db_utils
 class LLMIntegration:
@@ -10,20 +9,23 @@ class LLMIntegration:
         self.token_limit = cfg.token_limit
         self.previous_queries = {}
 
-    def generate_response(self, prompt, max_tokens=4096 - 52):
+    def generate_response(self, prompt):
         messages = [
-            {"role": "system", "content": "You are a seasoned data analyst with years of experience with SQL databases like Postgre, python programming and Business Analytics."},
-            {"role": "user", "content": prompt}
-        ]
-        num_retries = 5
+    {
+        "role": "system",
+        "content": f"For my database: {cfg.pg_database}. Remember the context:"
+    },
+    {"role": "user","content": f"{prompt}. Write working psql code." }
+]
+        num_retries = 1
         for attempt in range(num_retries):
             try:
                 response = openai.ChatCompletion.create(
                     model=self.model,
                     messages=messages,
                     temperature=self.temperature,
-                    max_tokens=max_tokens
                 )
+                print("llm response: ", response)
                 return response.choices[0].message["content"].strip()
             except openai.error.RateLimitError:
                 if cfg.debug_mode:
@@ -32,6 +34,7 @@ class LLMIntegration:
             except openai.error.APIError as e:
                 # Handle other API errors
                 pass
+    
     
     def generate_insights(self, result):
         #print result

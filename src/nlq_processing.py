@@ -3,6 +3,7 @@ from database_interaction import DatabaseInteraction
 import requests
 import config.config as cfg
 
+# None of this is used yet. All covered by llm_integration right now.
 def hf_query(payload, api_url):
     headers = {"Authorization": f"Bearer {cfg.Config().hf_api_key}"}
     print("Payload: ", payload)
@@ -30,6 +31,7 @@ class NLQProcessing:
         return sql_query
     
     def chain_of_thought(self, initial_input):
+        # might migrate to llm_integration.py
         mem_ops = self.llm_get_steps(initial_input)
         for mem_op in mem_ops:
             new_mem_op = self.llm_update_operation(mem_op)
@@ -58,13 +60,13 @@ class NLQProcessing:
             payload = {
                 "inputs": {
                     "question": nl_query,
-                    "context": "Only produce SQL code. You don't know anything about the database. Query what you need to know.",
+                    "context": "You don't know anything about the database. Query what you need to know. ONLY CODE",
                 }
             }
             return hf_query(payload, API_URL)
         else :
             print("Using LLM config")
-            prompt = f"You know nothing about the database. Query what you need: {nl_query}. Only code"
+            prompt = f"You know nothing about the database. Query what you need: {nl_query}. ONLY CODE"
             sql_query = self.llm.generate_response(prompt)
             return sql_query
         
@@ -72,6 +74,6 @@ class NLQProcessing:
 if __name__ == "__main__":
     nlqp = NLQProcessing()
     nl_query = "What are the total sales for product A?"
-    result, insights = nlqp.process_query(nl_query)
+    result = nlqp.process_query(nl_query)
     print(f"Query Result: {result}")
-    print(f"Insights: {insights}")
+    print("Insights:")
