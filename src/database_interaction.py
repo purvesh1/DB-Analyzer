@@ -48,6 +48,7 @@ class DatabaseInteraction:
             self.conn.close()
 
     def execute_sql(self, sql, params=None):
+        #TODO: Add write permission management
         try:
             self.connect()
             self.cursor.execute(sql, params)

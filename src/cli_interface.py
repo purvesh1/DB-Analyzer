@@ -8,19 +8,20 @@ def main():
     nlqp = NLQProcessing()
 
     while True:
-        nl_query = input("Please enter your query in natural language: ")
+        nl_query = input("Please enter your query in an unambigous way: ")
         print("Natural Language Query: ", nl_query)
         
+        llm.chain_of_thought(nl_query, db)
         # Log NL query
-        print(db.log_to_file(nl_query, False))
+        # print(db.log_to_file(nl_query, False))
         
-        # Convert NL query to SQL query
-        sql_query = db.extract_sql_blocks(llm.generate_response(nl_query))[0]
-        print("SQL Query: ", sql_query)
-        print("-"*20)
+        # # Convert NL query to SQL query
+        # sql_query = db.extract_sql_blocks(llm.generate_response(nl_query))[0]
+        # print("SQL Query: ", sql_query)
+        # print("-"*20)
         
-        # Log SQL query
-        print(db.log_to_file(sql_query, True))
+        # # Log SQL query
+        # print(db.log_to_file(sql_query, True))
         
         # Execute SQL query
         # data = db.execute_sql(sql_query)

@@ -5,7 +5,7 @@ from config.config import cfg
 def main():
     print("Welcome to the Natural Language SQL Query Interface!")
     print("1. CLI Interface" * True)
-    print("2. Use langchain" * False)
+    print("2. Web App " * False)
     # Future options can go here
     # choice = input("Please select an interface to proceed: ")
     
