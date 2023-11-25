@@ -1,15 +1,12 @@
 from database_interaction import DatabaseInteraction
 from llm_integration import LLMIntegration
-from nlq_processing import NLQProcessing
 
 def main():
     db = DatabaseInteraction()
     llm = LLMIntegration()
-    nlqp = NLQProcessing()
 
     while True:
         nl_query = input("Please enter your query in an unambigous way: ")
-        print("Natural Language Query: ", nl_query)
         
         llm.chain_of_thought(nl_query, db)
         # Log NL query

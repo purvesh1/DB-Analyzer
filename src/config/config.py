@@ -24,7 +24,7 @@ class Config(metaclass=Singleton):
         self.pg_host = os.getenv("PG_HOST", "127.0.0.1")
         self.pg_user = os.getenv("PG_USER", "postgres")
         self.pg_port = int(os.getenv("PG_PORT", "5432"))
-        self.pg_database = os.getenv("PG_DATABASE", "capstone_test")
+        self.pg_database = os.getenv("PG_DATABASE", "exercises")
 
     def set_openai_api_key(self, value: str):
         self.openai_api_key = value
@@ -51,3 +51,4 @@ class Config(metaclass=Singleton):
         self.pg_database = value
 
 cfg = Config()
+# psql -U pgexercises -f clubdata.sql -d postgres -x -q

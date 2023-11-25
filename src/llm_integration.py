@@ -12,12 +12,12 @@ class LLMIntegration:
 
     def generate_response(self, prompt):
         messages = [
-    {
-        "role": "system",
-        "content": f"For my database: {cfg.pg_database}. Remember the context:"
-    },
-    {"role": "user","content": f"{prompt}. Write working psql code." }
-]
+            {
+                "role": "system",
+                "content": f"For my database: {cfg.pg_database}. Remember the context:"
+            },
+            {"role": "user","content": f"{prompt}. Write working psql code." }
+        ]
         num_retries = 1
         for attempt in range(num_retries):
             try:
@@ -26,7 +26,6 @@ class LLMIntegration:
                     messages=messages,
                     temperature=self.temperature,
                 )
-                print("llm response: ", response)
                 return response.choices[0].message["content"].strip()
             except openai.error.RateLimitError:
                 if cfg.debug_mode:
@@ -65,12 +64,17 @@ class LLMIntegration:
     
     def chain_of_thought(self, initial_input, db):
         # might migrate to llm_integration.py
-        mem_ops = self.llm_get_steps(initial_input)
+        mem_ops = self.llm_get_steps(db.metadata, initial_input)
         print("no. of mem_ops: ", len(mem_ops))
         for mem_op in mem_ops:
             print("mem_op: ", mem_op)
+            print("Step Description: ", mem_op['description'])
             db.log_to_file(mem_op['description'], False)
             db.log_to_file(mem_op['sql_code'], True)
+        results ,columns = db.execute_sql(mem_op['sql_code'])
+        print("colums: ", columns)
+        print("results: ", results)
+        db.display_query_results(results, columns)
         # final_response = self.llm_summary()
         # return final_response
 
@@ -98,32 +102,45 @@ class LLMIntegration:
         return parsed_steps
 
 
-    def llm_get_steps(self, user_input):
+    def llm_get_steps(self, metadata, user_input):
         # Use LLM to break down the user_input into a series of SQL queries or other operations
+        metadata_description = ""
+
+        # Generate a description from the metadata for each table
+        for table, details in metadata.items():
+            table_description = details.get('description', 'No description available')
+            column_details = ', '.join([f"{col}: {col_details['data_type']}" for col, col_details in details.get('columns', {}).items()])
+            metadata_description += f"Table '{table}' ({table_description}): Columns - {column_details}. "
         messages = [
-    {
-        "role": "system",
-        "content": f"user info: host: {cfg.pg_host}, port: {cfg.pg_port}, User: {cfg.pg_user}, database: {cfg.pg_database}."
-    },
-    {"role": "user","content":f"""
-Please tell me what standard SQL statements should I use in order to respond to the "USER INPUT". \
-If it needs multiple SQL operations on the database, please list them step by step concisely. \
-If there is no need to use the database, reply to the "USER INPUT" directly.
-The output should be a markdown code snippet formatted in the following schema, \
-including the leading and trailing "\`\`\`" and "\`\`\`":
+            {
+                "role": "system",
+                "content": "PostgreSQL connection established. Details - Host: {}, Port: {}, User: {}, Database: {}.".format(cfg.pg_host, cfg.pg_port, cfg.pg_user, cfg.pg_database)
+            },
+            {
+                "role": "user",
+                "content": """
+        Please analyze the following user input and provide appropriate pSQL statements. If multiple SQL operations are needed, list them in a sequential, step-by-step manner. If the user input doesn't require database interaction, please respond directly to the query.
+        Database Schema Information:
+        {}
+        Format the SQL statements as markdown code snippets, structured as follows:
 
-Step1: <Description of first step>
-``` SQL command for step1 ```
+        - Step 1: [Description of first step]
+        ```sql
+        [SQL command for step 1]
+        ```
 
-Step2: <Description of second step>
-``` SQL command for step2 ```
+        - Step 2: [Description of second step]
+        ```sql
+        [SQL command for step 2]
+        ```
 
-......
+        Continue this format for all required steps.
 
-USER INPUT: {user_input}
-ANSWER:
-""" }
-]
+        USER INPUT: {}
+        ANSWER:
+        """.format(metadata_description, user_input)
+            }
+        ]
         num_retries = 1
         for attempt in range(num_retries):
             try:

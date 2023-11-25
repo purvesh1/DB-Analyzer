@@ -3,7 +3,10 @@ from config.config import cfg
 from datetime import datetime
 import subprocess
 import os
+import keyboard
+from prettytable import PrettyTable
 import re
+import json
 
 class DatabaseInteraction:
     ## TODO: Make a choice, either use psycopg2 or subprocess, not both. Not utilizing the psycopg2 right now. But kept. 
@@ -13,19 +16,48 @@ class DatabaseInteraction:
         self.session_id = datetime.now().strftime("%Y%m%d%H%M%S")
         self.file_path = f"src/artifacts/session_output_{self.session_id}.txt"
 
-    def fetch_metadata(self):
+    def fetch_metadata(self, schema = 'public'):
         cursor = self.conn.cursor()
-        query = "SELECT table_name FROM information_schema.tables WHERE table_schema='public';"
-        cursor.execute(query)
+
+        # Fetching table names
+        table_query = f"SELECT table_name FROM information_schema.tables WHERE table_schema='{schema}';"
+        cursor.execute(table_query)
         tables = [table[0] for table in cursor.fetchall()]
+
         metadata = {}
         for table in tables:
-            query = f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table}';"
-            cursor.execute(query)
+            # Fetching column details for each table
+            column_query = f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table}';"
+            cursor.execute(column_query)
             columns = cursor.fetchall()
-            metadata[table] = {column[0]: column[1] for column in columns}
+
+            # Formatting metadata with empty descriptions
+            metadata[table] = {
+                "description": "",  # Table description (currently empty)
+                "columns": {
+                    column[0]: {
+                        "data_type": column[1],
+                        "description": ""  # Column description (currently empty)
+                    } for column in columns
+                }
+            }
+
         self.disconnect()
+        self.save_metadata_to_json(metadata)
         return metadata
+
+    def save_metadata_to_json(self, metadata, filename = "src/artifacts/metadata.json"):
+        # Check if the file already exists
+        if not os.path.isfile(filename):
+            # Convert dictionary to JSON string
+            json_str = json.dumps(metadata, indent=4)
+            
+            # Write JSON string to file
+            with open(filename, 'w') as file:
+                file.write(json_str)
+            print(f"Metadata saved to {filename}")
+        else:
+            print(f"File {filename} already exists. No new file was created.")
 
     def refresh_metadata(self):
         self.metadata = self.fetch_metadata()
@@ -50,43 +82,32 @@ class DatabaseInteraction:
     def execute_sql(self, sql, params=None):
         #TODO: Add write permission management
         try:
+            sql = ' '.join(sql.split())
+            print("Executing SQL: ", sql)
             self.connect()
             self.cursor.execute(sql, params)
             self.conn.commit()
-            return self.cursor.fetchall()
+            columns = [desc[0] for desc in self.cursor.description]
+            return self.cursor.fetchall(), columns
         except Exception as e:
             self.conn.rollback()
             print(f"SQL error: {str(e)}")
         finally:
             self.disconnect()
-
-    def select(self, table, columns="*", condition=None):
-        sql = f"SELECT {columns} FROM {table}"
-        if condition:
-            sql += f" WHERE {condition}"
-        return self.execute_sql(sql)
-
-    def validate_sql_query(self, sql_query):
-    # Basic validation logic here. For now, let's just check if the query is not empty.
-        if not sql_query.strip():
-            return False
-        return True
     
-    def extract_sql_blocks(self, text):
-        # This regular expression looks for ```sql followed by any characters
-        # and ending with ```, capturing the content in between.
-        pattern = r"```sql(.*?)```"
-        
-        # re.DOTALL allows the dot (.) to match newlines as well
-        matches = re.findall(pattern, text, re.DOTALL)
-        
-        # Clean up any leading or trailing whitespace and join the matches
-        # Each match is stripped of leading/trailing whitespace and returned in a list
-        sql_blocks = [match.strip() for match in matches]
-        
-        return sql_blocks
     # Add more CRUD methods like insert, update, delete, etc.
+    def display_query_results(self, results, columns):
+        table = PrettyTable()
+        table.field_names = columns
+
+        row_count = 0
+        for row in results:
+            table.add_row(row)
+            row_count += 1
+        print(table)
+    
     def log_to_file(self, query, sql=True):
+        ''' ⚠️Deals with a subprocess right on the shell, prolly vulnerable to SQL injections.'''
         
         with open(self.file_path, 'a') as f:
             f.write("\n-------------------------\n")
