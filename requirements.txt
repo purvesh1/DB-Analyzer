@@ -5,3 +5,4 @@ torch
 accelerate
 argparse
 keyboard
+streamlit

@@ -9,12 +9,13 @@ class LLMIntegration:
         self.temperature = cfg.temperature
         self.token_limit = cfg.token_limit
         self.previous_queries = {}
+        self.tries = 0
 
     def generate_response(self, prompt):
         messages = [
             {
                 "role": "system",
-                "content": f"For my database: {cfg.pg_database}. Remember the context:"
+                "content": "PostgreSQL connection established. Details - Host: {}, Port: {}, User: {}, Database: {}.".format(cfg.pg_host, cfg.pg_port, cfg.pg_user, cfg.pg_database)
             },
             {"role": "user","content": f"{prompt}. Write working psql code." }
         ]
@@ -66,15 +67,51 @@ class LLMIntegration:
         # might migrate to llm_integration.py
         mem_ops = self.llm_get_steps(db.metadata, initial_input)
         print("no. of mem_ops: ", len(mem_ops))
+        
+        if len(mem_ops) == 0:
+            return 
         for mem_op in mem_ops:
             print("mem_op: ", mem_op)
             print("Step Description: ", mem_op['description'])
             db.log_to_file(mem_op['description'], False)
             db.log_to_file(mem_op['sql_code'], True)
-        results ,columns = db.execute_sql(mem_op['sql_code'])
-        print("colums: ", columns)
+        results ,columns, error = db.execute_sql(mem_op['sql_code'])
+        
+        if error:
+            print("Error: ", error)
+            prompt = """We encountered the following:``` {error} ```, while trying to execute the following SQL query: ``` {mem_op} ``` Please try again to fix the issue and give a solution in the following format : 
+            Format the SQL statements as markdown code snippets, structured as follows:
+
+            - Step 1: [Description of first step]
+            ```sql
+            [SQL command for step 1]
+            ```
+
+            - Step 2: [Description of second step]
+            ```sql
+            [SQL command for step 2]
+            ```
+
+            Continue this format for all required steps.""".format(error=error, mem_op=mem_op['sql_code'])
+            self.generate_response(prompt)
+            mem_ops = self.llm_get_steps(db.metadata, initial_input)
+            print("no. of mem_ops: ", len(mem_ops))
+            
+            if len(mem_ops) == 0:
+                return 
+            for mem_op in mem_ops:
+                print("mem_op: ", mem_op)
+                print("Step Description: ", mem_op['description'])
+                db.log_to_file(mem_op['description'], False)
+                db.log_to_file(mem_op['sql_code'], True)
+            results ,columns, error = db.execute_sql(mem_op['sql_code'])
+        
+        if error:
+            print("Error: ", error)
+            return
+        print("columns: ", columns)
         print("results: ", results)
-        db.display_query_results(results, columns)
+        return db.display_query_results(results, columns)
         # final_response = self.llm_summary()
         # return final_response
 
@@ -101,6 +138,12 @@ class LLMIntegration:
 
         return parsed_steps
 
+    def unparse_steps(self, mem_ops):
+        formatted_str = ""
+        for mem_op in mem_ops:
+            step_str = f"Step {mem_op['step_number']}: {mem_op['description']}\n```sql\n{mem_op['sql_code']}\n```\n"
+            formatted_str += step_str
+        return formatted_str
 
     def llm_get_steps(self, metadata, user_input):
         # Use LLM to break down the user_input into a series of SQL queries or other operations

@@ -2,8 +2,8 @@ import psycopg2
 from config.config import cfg
 from datetime import datetime
 import subprocess
+import pandas as pd
 import os
-import keyboard
 from prettytable import PrettyTable
 import re
 import json
@@ -88,10 +88,12 @@ class DatabaseInteraction:
             self.cursor.execute(sql, params)
             self.conn.commit()
             columns = [desc[0] for desc in self.cursor.description]
-            return self.cursor.fetchall(), columns
+            return self.cursor.fetchall(), columns, None  # Success, no error message
         except Exception as e:
             self.conn.rollback()
-            print(f"SQL error: {str(e)}")
+            error_message = f"SQL error: {str(e)}"
+            print(error_message)
+            return None, None, error_message
         finally:
             self.disconnect()
     
@@ -105,6 +107,7 @@ class DatabaseInteraction:
             table.add_row(row)
             row_count += 1
         print(table)
+        return pd.DataFrame(results, columns=columns)
     
     def log_to_file(self, query, sql=True):
         ''' ⚠️Deals with a subprocess right on the shell, prolly vulnerable to SQL injections.'''

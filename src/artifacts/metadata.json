@@ -1,0 +1,93 @@
+{
+    "members": {
+        "description": "",
+        "columns": {
+            "memid": {
+                "data_type": "integer",
+                "description": ""
+            },
+            "surname": {
+                "data_type": "character varying",
+                "description": ""
+            },
+            "firstname": {
+                "data_type": "character varying",
+                "description": ""
+            },
+            "address": {
+                "data_type": "character varying",
+                "description": ""
+            },
+            "zipcode": {
+                "data_type": "integer",
+                "description": ""
+            },
+            "telephone": {
+                "data_type": "character varying",
+                "description": ""
+            },
+            "recommendedby": {
+                "data_type": "integer",
+                "description": ""
+            },
+            "joindate": {
+                "data_type": "timestamp without time zone",
+                "description": ""
+            }
+        }
+    },
+    "facilities": {
+        "description": "",
+        "columns": {
+            "facid": {
+                "data_type": "integer",
+                "description": ""
+            },
+            "name": {
+                "data_type": "character varying",
+                "description": ""
+            },
+            "membercost": {
+                "data_type": "numeric",
+                "description": ""
+            },
+            "guestcost": {
+                "data_type": "numeric",
+                "description": ""
+            },
+            "initialoutlay": {
+                "data_type": "numeric",
+                "description": ""
+            },
+            "monthlymaintenance": {
+                "data_type": "numeric",
+                "description": ""
+            }
+        }
+    },
+    "bookings": {
+        "description": "",
+        "columns": {
+            "bookid": {
+                "data_type": "integer",
+                "description": ""
+            },
+            "facid": {
+                "data_type": "integer",
+                "description": ""
+            },
+            "memid": {
+                "data_type": "integer",
+                "description": ""
+            },
+            "starttime": {
+                "data_type": "timestamp without time zone",
+                "description": ""
+            },
+            "slots": {
+                "data_type": "integer",
+                "description": ""
+            }
+        }
+    }
+}
