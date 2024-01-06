@@ -6,3 +6,5 @@ accelerate
 argparse
 keyboard
 streamlit
+graphviz 
+pydot

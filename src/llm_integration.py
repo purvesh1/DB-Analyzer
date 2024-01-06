@@ -63,13 +63,13 @@ class LLMIntegration:
                 # Handle other API errors
                 pass
     
-    def chain_of_thought(self, initial_input, db):
+    def chain_of_thought(self, initial_input, db , context = ""):
         # might migrate to llm_integration.py
-        mem_ops = self.llm_get_steps(db.metadata, initial_input)
+        mem_ops, response = self.llm_get_steps(db.metadata, initial_input)
         print("no. of mem_ops: ", len(mem_ops))
         
         if len(mem_ops) == 0:
-            return 
+            return False, response
         for mem_op in mem_ops:
             print("mem_op: ", mem_op)
             print("Step Description: ", mem_op['description'])
@@ -98,7 +98,7 @@ class LLMIntegration:
             print("no. of mem_ops: ", len(mem_ops))
             
             if len(mem_ops) == 0:
-                return 
+                return False, response
             for mem_op in mem_ops:
                 print("mem_op: ", mem_op)
                 print("Step Description: ", mem_op['description'])
@@ -108,10 +108,10 @@ class LLMIntegration:
         
         if error:
             print("Error: ", error)
-            return
+            return False, error
         print("columns: ", columns)
         print("results: ", results)
-        return db.display_query_results(results, columns)
+        return True, db.display_query_results(results, columns)
         # final_response = self.llm_summary()
         # return final_response
 
@@ -135,8 +135,8 @@ class LLMIntegration:
                 'sql_code': match[2].strip()
             }
             parsed_steps.append(step)
-
-        return parsed_steps
+        
+        return parsed_steps, response
 
     def unparse_steps(self, mem_ops):
         formatted_str = ""
@@ -162,7 +162,8 @@ class LLMIntegration:
             {
                 "role": "user",
                 "content": """
-        Please analyze the following user input and provide appropriate pSQL statements. If multiple SQL operations are needed, list them in a sequential, step-by-step manner. If the user input doesn't require database interaction, please respond directly to the query.
+        Please analyze the following user input and provide appropriate pSQL statements. If multiple SQL operations are needed, list them in a sequential, step-by-step manner. Use all the information you have to build final executable SQL statements.
+        If the user input doesn't require database interaction, please respond directly to the query.
         Database Schema Information:
         {}
         Format the SQL statements as markdown code snippets, structured as follows:
@@ -179,6 +180,7 @@ class LLMIntegration:
 
         Continue this format for all required steps.
 
+        Then combine all the steps into a single SQL statement and execute it.
         USER INPUT: {}
         ANSWER:
         """.format(metadata_description, user_input)

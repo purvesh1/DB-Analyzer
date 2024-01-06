@@ -1,0 +1,44 @@
+// Database Schema
+digraph {
+	members [label=members]
+	"members.memid" [label="memid ({'data_type': 'integer', 'description': ''})"]
+	members -> "members.memid"
+	"members.surname" [label="surname ({'data_type': 'character varying', 'description': ''})"]
+	members -> "members.surname"
+	"members.firstname" [label="firstname ({'data_type': 'character varying', 'description': ''})"]
+	members -> "members.firstname"
+	"members.address" [label="address ({'data_type': 'character varying', 'description': ''})"]
+	members -> "members.address"
+	"members.zipcode" [label="zipcode ({'data_type': 'integer', 'description': ''})"]
+	members -> "members.zipcode"
+	"members.telephone" [label="telephone ({'data_type': 'character varying', 'description': ''})"]
+	members -> "members.telephone"
+	"members.recommendedby" [label="recommendedby ({'data_type': 'integer', 'description': ''})"]
+	members -> "members.recommendedby"
+	"members.joindate" [label="joindate ({'data_type': 'timestamp without time zone', 'description': ''})"]
+	members -> "members.joindate"
+	facilities [label=facilities]
+	"facilities.facid" [label="facid ({'data_type': 'integer', 'description': ''})"]
+	facilities -> "facilities.facid"
+	"facilities.name" [label="name ({'data_type': 'character varying', 'description': ''})"]
+	facilities -> "facilities.name"
+	"facilities.membercost" [label="membercost ({'data_type': 'numeric', 'description': ''})"]
+	facilities -> "facilities.membercost"
+	"facilities.guestcost" [label="guestcost ({'data_type': 'numeric', 'description': ''})"]
+	facilities -> "facilities.guestcost"
+	"facilities.initialoutlay" [label="initialoutlay ({'data_type': 'numeric', 'description': ''})"]
+	facilities -> "facilities.initialoutlay"
+	"facilities.monthlymaintenance" [label="monthlymaintenance ({'data_type': 'numeric', 'description': ''})"]
+	facilities -> "facilities.monthlymaintenance"
+	bookings [label=bookings]
+	"bookings.bookid" [label="bookid ({'data_type': 'integer', 'description': ''})"]
+	bookings -> "bookings.bookid"
+	"bookings.facid" [label="facid ({'data_type': 'integer', 'description': ''})"]
+	bookings -> "bookings.facid"
+	"bookings.memid" [label="memid ({'data_type': 'integer', 'description': ''})"]
+	bookings -> "bookings.memid"
+	"bookings.starttime" [label="starttime ({'data_type': 'timestamp without time zone', 'description': ''})"]
+	bookings -> "bookings.starttime"
+	"bookings.slots" [label="slots ({'data_type': 'integer', 'description': ''})"]
+	bookings -> "bookings.slots"
+}
