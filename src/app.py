@@ -41,7 +41,6 @@ def chat_interface(llm, db):
             st.markdown(f"**💬**: {message['content']}")
         elif message['role'] == "🤖":
             # Reconstruct the DataFrame to display
-            print("df to display: ", message['content'])
             df_to_display = message['content']
 
             if isinstance(df_to_display, str):
@@ -62,7 +61,6 @@ def chat_interface(llm, db):
         bool_dataframe, df = llm.chain_of_thought(user_input, db)
         
         # Display the DataFrame
-        
 
         if isinstance(df, pd.DataFrame):
             st.dataframe(df)
@@ -84,36 +82,20 @@ def chat_interface(llm, db):
             st.chat_message("🤖").markdown(df)
             st.session_state.chat_history.append({"role": "🤖", "content": df, "is_df": False})
 
-        st.session_state['waiting_for_followup'] = True
-
-
-        if st.session_state.get('follow_up_needed', True):
-        # Create a radio button prompt
-            follow_up_option = st.multiselect("Do you want to finish or have a follow-up question?", 
-                                        ['Finish', 'Follow Up'])
-
-            if follow_up_option == 'Finish':
-                st.session_state['follow_up_needed'] = False
-                st.success("Great! How else can I assist you?")
-                st.session_state['last_response'] = None  # Clear last response
-                # You can use a flag or other mechanism instead of break if needed
-
-            elif follow_up_option == 'Follow Up':
-                st.session_state['follow_up_needed'] = True
-                st.info("Please type your follow-up question.")
-
-        print("chat history: ", st.session_state.chat_history)
-
 def main():
-    llm = LLMIntegration()
-    db = DatabaseInteraction()
+    
+    if 'llm' not in st.session_state:
+        st.session_state.llm = LLMIntegration()
+
+    if 'db' not in st.session_state:
+        st.session_state.db = DatabaseInteraction()
 
     # Page selection
     page = st.sidebar.selectbox("Choose a view", ["Chat Interface", "Schema"])
 
     # Page routing
     if page == "Chat Interface":
-        chat_interface(llm, db)
+        chat_interface(st.session_state.llm, st.session_state.db)
     elif page == "Schema Diagram":
         schema_diagram_page()
 

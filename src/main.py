@@ -1,5 +1,4 @@
 from cli_interface import main as cli_main
-from nlq_processing import NLQProcessing
 from config.config import cfg
 import subprocess
 
